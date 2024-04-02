@@ -9,15 +9,15 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 
-# Initialize Chrome WebDriver with options
-# options = webdriver.ChromeOptions()
-# options.add_argument('--ignore-certificate-errors')
-# driver = webdriver.Chrome(options=options, service=ChromeService(ChromeDriverManager().install()))
+# Initialize Chrome WebDriver
 driver = webdriver.Chrome(service=ChromeService(ChromeDriverManager().install()))
-
 # Load Glassdoor login page
 driver.get('https://www.glassdoor.com/profile/login_input.htm')
-
+# Getting the email and password I will need to login
+with open('email.txt', 'r') as f:
+    email_login = f.read().strip()
+with open('password.txt', 'r') as f:
+    password_login = f.read().strip()
 try:
     # 1st PAGE ENTER EMAIL AND MOVE ON #######################################
     # Find the email input field and enter your email address
@@ -26,14 +26,14 @@ try:
 # # Within the email input field, find the input element
     email_input_field = email_input.find_element(By.TAG_NAME, 'input')
     # email_input = driver.find_element(By.NAME, 'username')
-    email_input_field.send_keys('meaganrainsbolton@gmail.com')
+    email_input_field.send_keys(email_login)
 
     # Find the continue with email button and click it
     continue_with_email_button = driver.find_element(By.CLASS_NAME, 'emailButton')
     continue_with_email_button.click()
 # 2ND PAGE ENTER PASSWORD AND LONGIN
     password_input = driver.find_element(By.ID, 'inlineUserPassword')
-    password_input.send_keys('456123Meagan')
+    password_input.send_keys(password_login)
 
     # Find the continue with email button and click it
     continue_with_signin_button = driver.find_element(By.CLASS_NAME, 'emailButton')
