@@ -18,8 +18,9 @@ with open('email.txt', 'r') as f:
     email_login = f.read().strip()
 with open('password.txt', 'r') as f:
     password_login = f.read().strip()
+
+# 1st PAGE ENTER EMAIL AND MOVE ON #######################################
 try:
-    # 1st PAGE ENTER EMAIL AND MOVE ON #######################################
     # Find the email input field and enter your email address
     email_input = driver.find_element(By.CLASS_NAME, 'email-input')
 
@@ -31,7 +32,7 @@ try:
     # Find the continue with email button and click it
     continue_with_email_button = driver.find_element(By.CLASS_NAME, 'emailButton')
     continue_with_email_button.click()
-# 2ND PAGE ENTER PASSWORD AND LONGIN
+# 2ND PAGE ENTER PASSWORD AND LONGIN #########################################
     password_input = driver.find_element(By.ID, 'inlineUserPassword')
     password_input.send_keys(password_login)
 
@@ -44,17 +45,21 @@ except NoSuchElementException as e:
 except Exception as e:
     print("An error occurred:", e)
 
-#######################################################333
-# navigating to the pages I want to scrape
-############################################################333    
-# Navigate to the job search page
+###############################################################
+# Navigating to the pages I want to scrape
+################################################################    
+
+# Creating vectors to hold the information for my dataframe
 titles = []
 companies = []
 cities = []
 states = []
 salaries = []
 ratings = []
+# Navigate to the job search page
 driver.get('https://www.glassdoor.com/Job/jobs.htm')
+# I searched popular data science locations so that I could pull information for those places specifically
+# this is an array of those top locations (I also included my home town in this array)
 locations = ['New York, NY', 'Houston, TX', 'San Francisco, CA', 'Seattle, WA', 'Chicago, IL', 'Raleigh, NC']
 for k in range(len(locations)):
     # Enter job search criteria
@@ -68,14 +73,14 @@ for k in range(len(locations)):
 
     time.sleep(3)
 
-    # #### loop through job posting and scrape data
-    # Find the "Show more jobs" button
-
+    # #### I decided there wasn't enough information for each loaction without loading more job listings so this loop 
+    # is for each time I click to show more job listings
     for i in range(2):
         jobs = driver.find_elements_by_css_selector('[data-test="jobListing"]')
 
+        # #### loop through job posting and scrape data
         for job in jobs:
-            # title = job.find_element_by_css_selector('[data-test="jobTitle"]').text
+            # Extracting the job title
             title = job.find_element_by_css_selector('a.JobCard_jobTitle___7I6y').text
             titles.append(title)
             # Company
@@ -95,6 +100,7 @@ for k in range(len(locations)):
                 states.append(state)
 
             try:
+                # Extracting the salary if it is listed
                 salary = job.find_element_by_css_selector('div.JobCard_salaryEstimate__arV5J').text
                 salaries.append(salary)
 
@@ -109,7 +115,8 @@ for k in range(len(locations)):
             except NoSuchElementException:
                 rating = 'NA'
                 ratings.append(rating)
-            
+        
+        # Find the "Show more jobs" button
         show_more_button = WebDriverWait(driver, 10).until(
             EC.element_to_be_clickable((By.XPATH, '//button[@data-test="load-more"]'))
         )
@@ -117,7 +124,7 @@ for k in range(len(locations)):
         time.sleep(3)
 
 ##################################################################################################################################################################3
-    
+# Combining all my vectors into one data set
 data_jobs = {
     'Job Title': titles,
     'Company': companies,
@@ -132,11 +139,12 @@ df_il_glassdoor = pd.DataFrame(data_jobs)
 df_il_glassdoor.to_csv('df_all_glassdoor2.csv', index = False)
 
 ##############################################################################################################################
-###########################################################################################3
+###########################################################################################
+# After looking at the CSV I decided I wanted to make it easier to read and that I could organize the information better
 # This is making the salary min and max for my data and just cleaning the dataframe to make it easier to work with
 ###########################################################################################
 #############################################################################################################################
-# Function to extract salary range
+# I'm reading in the dataframe because this was done on a seperate day than the earlier code
 df = pd.read_csv('C:/Users/meaga/df_glassdoor2.csv')
 # Function to determine pay rate
 def determine_pay_rate(salary):
@@ -153,7 +161,7 @@ def determine_pay_rate(salary):
 # Apply the function to create the 'Pay rate' column
 df['Pay rate'] = df['Salary'].apply(determine_pay_rate)
 
-
+# Function to extract salary range
 def extract_salary_range(salary):
     if isinstance(salary, str) and '-' in salary:
         salary_range = salary.split(' - ')
@@ -204,6 +212,5 @@ df.drop(columns=['Salary'], inplace=True)
 
 # Display the updated DataFrame
 print(df)
-
 # writing the data to a new file 
 df.to_csv('df_glassdoor.csv', index = False)
